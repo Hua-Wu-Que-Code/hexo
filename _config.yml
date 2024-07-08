@@ -106,3 +106,23 @@ deploy:
   type: git
   repo: https://github.com/Hua-Wu-Que-Code/hexo.git
   branch: gh-pages
+
+#配置侧边栏索引
+jsonContent:
+  meta: true
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: true
+    excerpt: false
+    categories: true
+    tags: true
