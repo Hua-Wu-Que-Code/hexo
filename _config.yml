@@ -3,7 +3,7 @@ subtitle: ''
 description: ''
 keywords: null
 author: John Doe
-language: en
+language: zh-CN
 timezone: ''
 url: https://hua-wu-que-code.github.io/hexo/
 root: /hexo/
@@ -59,7 +59,8 @@ pagination_dir: page
 include: null
 exclude: null
 ignore: null
-theme: icarus
+theme: fluid
+
 deploy:
   type: git
   repo: https://github.com/Hua-Wu-Que-Code/hexo.git
