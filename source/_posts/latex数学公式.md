@@ -5,7 +5,7 @@ tags:
 mathjax: true
 index_img: /img/latex.jpg
 categories:
-  - 技术
+  - 学习
 excerpt: 主要介绍了如何在 markdown 中使用 latex 公式
 ---
 # 公式的插入
