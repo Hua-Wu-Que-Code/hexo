@@ -1,12 +1,12 @@
 ---
-title: 7.22周报-BERT
+title: BERT 论文精读
 date: 2024-07-17 00:08:21
 tags:
-  - 论文
+  - 
 mathjax: true
 index_img: /img/zb.jpg
 categories:
-  - 周报
+  - 论文
 ---
 
 # 论文题目：BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding

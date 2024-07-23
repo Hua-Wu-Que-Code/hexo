@@ -1,12 +1,12 @@
 ---
-title: 7.30周报-AlexNet
+title: AlexNet 论文精读
 mathjax: true
 index_img: /img/zb.jpg
 categories:
-  - 周报
+  - 论文
 date: 2024-07-22 20:50:49
 tags:
-  - 论文
+  - 
 ---
 
 # 批注
