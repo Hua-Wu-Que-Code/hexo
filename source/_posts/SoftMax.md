@@ -3,7 +3,7 @@ title: SoftMax回归
 mathjax: true
 index_img: /img/zb.jpg
 categories:
-  - 周报
+  - 深度学习
 date: 2024-07-23 23:26:23
 tags:
 ---
