@@ -1,6 +1,6 @@
 ---
 title: AlexNet 论文精读
-mathjax: true
+math: true
 index_img: /img/zb.jpg
 categories:
   - 论文
@@ -11,6 +11,7 @@ tags:
 # 论文题目：ImageNet Classification with Deep Convolutional Neural Networks
 
 # 一、动机
+
 传统的对象识别任务通常依赖于图像数量只有几万张的比较小的数据集（例如 NORB、Caltech-101/256和CIFAR-10/100），对于简单的识别任务，这些规模是足够的。但对于更加复杂的真实世界场景，这些数据集就稍显不足。随着像 ImageNet 这样的大规模数据集的出现，一个能够处理这些数据并充分利用其潜力的模型就至关重要了。本文中提出了一个能够有效处理数据量达到数百万张的图像数据模型 CNNs，并且通过介绍如 ReLu 的非线性激活函数和 dropout 正则化方法来提高对象识别任务的性能。
 
 # 二、数据集
@@ -18,18 +19,18 @@ tags:
 # 三、模型
 本篇论文中描述的模型是 AlexNet，即一个深度卷积神经网络（CNN），是一个由五个卷积层和三个全连接层组成的深度卷积神经网络。它的输入层接收224x224像素的RGB图像。模型的前两组卷积层使用大尺寸的卷积核和池化[^3]操作。后续的三层卷积层使用较小的3x3卷积核，进一步提取图像特征。模型的最后三层是全连接层，分别包含4096个神经元。输出层是一个softmax层，用于ImageNet 数据集的1000个类别进行分类。模型采用双GPU并行计算来加速训练过程。
 在AlexNet中，为了避免过拟合，采用了几种策略。首先，使用了数据增强技术，如随机裁剪和水平翻转，以增加训练数据的多样性。其次，模型在全连接层中应用了dropout技术，以0.5的概率随机丢弃神经元，防止过拟合。此外，网络还采用了局部响应归一化（LRN），抑制相邻神经元之间的竞争，进一步提高泛化能力。
-![alt text](img/Longshot-20240728140924.png)
+![alt text](../img/Longshot-20240728140924.png)
 
 # 四、训练细节
 AlexNet 使用了 mini-batch 梯度下降法 + Momentum梯度下降法，作者发现较小的权重衰减对于模型的训练十分重要，即权重衰减不仅仅是一个正则化方法，同时也减少了模型的训练误差，权重更新的方法如下：
-![alt text](img/Longshot-20240728141505.png)
-其中，i表示当前的迭代次数，v表示momentum，ϵ表示学习率，⟨∂L/∂w∣wi⟩Di是第i批次的目标函数关于w的导数（wi的偏导数）Di的平均值。
+![alt text](../img/Longshot-20240728141505.png)
+其中，i表示当前的迭代次数，v表示momentum，ϵ表示学习率，⟨∂L/∂w∣wi⟩Di是第i批次的目标函数关于w的导数（wi的偏导数)Di的平均值。
 
 # 五、实验
 ILSVRC2010比赛冠军方法是Sparse coding，AlexNet与其比较：
-![alt text](img/Longshot-20240728141739.png)
+![alt text](../img/Longshot-20240728141739.png)
 ILSVRC-2012，AlexNet参加比赛，获得冠军，远超第二名SIFT+FVs：
-![alt text](img/Longshot-20240728141746.png)
+![alt text](../img/Longshot-20240728141746.png)
 
 # 六、总结
 本文指出了 ReLu（Rectified Linear Unit）激活函数在训练深度网络时比传统的激活函数（tanh 和 sigmoid）更为有效，更够加速训练过程提高模型的性能；通过LRN、数据增强（随机裁剪和翻转）和 dropout 技术，AlexNet 有效的减少了过拟合，提高了模型的泛化能力。由于当时的局限性，现在的研究发现，LRN并不是提升性能的必要性，批归一化（Batch Normalization，BN）提供了更好的训练稳定性和性能提升；虽然AlexNet使用了数据增强和dropout，但更先进的方法（如数据扩充、混合现实数据增强、自动数据增强策略等）和更强大的正则化技术（如L2正则化、学习率调度、早停等）已被开发和广泛应用。
