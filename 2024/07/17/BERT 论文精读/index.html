@@ -1,0 +1,744 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/hexo/img/fluid.png">
+  <link rel="icon" href="/hexo/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="花无缺">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文题目：BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding一、动机传统语言模型在理解语言时往往是单向的，即它们只能从文本的一个方向（要么从左到右，要么从右到左）来理解信息，这种单向性限制了模型对文本整体含义的理解能力；在预训练阶段和微调阶段使用的目标函数和数据分布可能不一致，导致预训练得">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BERT 论文精读">
+<meta property="og:url" content="https://hua-wu-que-code.github.io/hexo/2024/07/17/BERT%20%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/index.html">
+<meta property="og:site_name" content="婺月">
+<meta property="og:description" content="论文题目：BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding一、动机传统语言模型在理解语言时往往是单向的，即它们只能从文本的一个方向（要么从左到右，要么从右到左）来理解信息，这种单向性限制了模型对文本整体含义的理解能力；在预训练阶段和微调阶段使用的目标函数和数据分布可能不一致，导致预训练得">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://hua-wu-que-code.github.io/hexo/img/zb.jpg">
+<meta property="article:published_time" content="2024-07-17T00:08:21.000Z">
+<meta property="article:modified_time" content="2024-07-28T06:38:22.598Z">
+<meta property="article:author" content="花无缺">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hua-wu-que-code.github.io/hexo/img/zb.jpg">
+  
+  
+  
+  <title>BERT 论文精读 - 婺月</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/hexo/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/hexo/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/hexo/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hua-wu-que-code.github.io","root":"/hexo/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/hexo/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/hexo/js/utils.js" ></script>
+  <script  src="/hexo/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/hexo/">
+      <strong>婺月</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/hexo/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/hexo/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/hexo/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/hexo/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="BERT 论文精读"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-07-17 00:08" pubdate>
+          2024年7月17日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">BERT 论文精读</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="论文题目：BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding"><a href="#论文题目：BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding" class="headerlink" title="论文题目：BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding"></a>论文题目：BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</h1><h1 id="一、动机"><a href="#一、动机" class="headerlink" title="一、动机"></a>一、动机</h1><p>传统语言模型在理解语言时往往是单向的，即它们只能从文本的一个方向（要么从左到右，要么从右到左）来理解信息，这种单向性限制了模型对文本整体含义的理解能力；在预训练阶段和微调阶段使用的目标函数和数据分布可能不一致，导致预训练得到的知识不能很好的迁移到下游任务。为了克服这些问题，BERT 通过深度双向 Transformer 结构来同时考虑输入文本的左侧和右侧上下文，生成更加全面和细致的语言表示；并且，采用了统一的框架进行预训练和微调，减少了预训练和微调阶段的差异，使得预训练得到的知识能够更有效的迁移到各种上下游工作<sup id="fnref:1" class="footnote-ref"><a href="#fn:1" rel="footnote"><span class="hint--top hint--rounded" aria-label="在 NLP 中，上游任务（Upstream Tasks）：通常是基础的、提供语言理解和处理能力的NLP任务，如分词、词性标注、句法分析，它们为更复杂的NLP应用打下基础；下游任务（Downstream Tasks）：依赖于上游任务输出的更高级的NLP任务，如情感分析、机器翻译、问答系统等，它们利用上游任务的输出来执行特定应用。">[1]</span></a></sup>。</p>
+<h1 id="二、模型"><a href="#二、模型" class="headerlink" title="二、模型"></a>二、模型</h1><p>BERT 模型基于 Transformer 架构，通过注意力机制捕捉文本中的长距离依赖关系，它包含多层注意力头，能够并行处理信息，实现深度双向的语言表示。</p>
+<p>模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction两种方法分别捕捉词语和句子级别的representation。</p>
+<p><img src="/hexo/img/Bert.jpeg" srcset="/hexo/img/loading.gif" lazyload alt="alt text"><br>BERT 提供了简单和复杂两个模型，对应的超参数分别如下：</p>
+<ul>
+<li>BERT<sub>BASE</sub>: L = 12, H=768, A = 12, 参数总量 110M</li>
+<li>BERT<sub>LARGE</sub>: L = 24, H=1024, A = 16, 参数总量 110M</li>
+<li>L:网络层数，即Transformer blocks的数量</li>
+<li>A:表示Multi-Head Attention中self-Attention的数量</li>
+<li>H：filter的尺寸</li>
+</ul>
+<h1 id="三、具体步骤"><a href="#三、具体步骤" class="headerlink" title="三、具体步骤"></a>三、具体步骤</h1><h2 id="1、预训练任务"><a href="#1、预训练任务" class="headerlink" title="1、预训练任务"></a>1、预训练任务</h2><p>BERT 是一个多任务模型，它的任务由两个自监督任务组成，即 MLP 和 NSP</p>
+<h3 id="1、Task-1-Masked-Language-Model"><a href="#1、Task-1-Masked-Language-Model" class="headerlink" title="1、Task 1:Masked Language Model"></a>1、Task 1:Masked Language Model</h3><p>Masked Language Model(MLM)和核心思想取自Wilson Taylor在1953年发表的一篇论文。<br>所谓MLM是指在训练的时候随机从输入语料中mask掉一些单词，然后通过上下文进行预测该单词。<br>该任务非常像我们在中学时期经常做的完形填空。正如传统的语言模型算法和RNN匹配那样，MLM的这个性质和Transformer的结构是非常匹配的。</p>
+<p>在BERT的实验中，15%的WordPiece Token会被随机Mask掉。<br>在训练模型时，一个句子会被多次喂到模型中用于参数学习，但是Google并没有在每次都mask掉这些单词，而是在确定要Mask掉的单词之后，80%的时候会直接替换为[MASK],10%替换为其他任意单词，10%的时候保留原始Token。</p>
+<h3 id="2、Task-2：Next-Sentence-Prediction"><a href="#2、Task-2：Next-Sentence-Prediction" class="headerlink" title="2、Task 2：Next Sentence Prediction"></a>2、Task 2：Next Sentence Prediction</h3><p>Next Sentence Prediction(NSP)的任务是判断句子B是否是句子A的下文。<br>如果是输出”IsNext”，否则输出”NotNext”。<br>训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话随机从语料中提取，它们的关系是NotNext。这个关系保存在图4中的[CLS]符号</p>
+<h2 id="2、输入表示"><a href="#2、输入表示" class="headerlink" title="2、输入表示"></a>2、输入表示</h2><p>BERT的输入的编码向量(长度是512)是3各嵌入特征的单位和，如图4，这三个词嵌入的特征是</p>
+<p>WordPiece 嵌入：WordPiece是指将单词划分成一组有限的公共子词单元，能在单词的有效性和字符的灵活性之间取得一个这种的平衡。图4示例中的playing拆成play和ing<br>位置嵌入(Position Embedding):位置嵌入是将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。<br>分割嵌入(Segment Embedding)：用于区分两个句子，例如B是否是A的下文(对话场景，问答场景等)。对于句子对，第一个句子的特征值是0，第二个句子的特征值是1.<br>最后，说明一下图4中的两个特殊符号[CLS]和[SEP]，其中[CLS]表示该特征用于分类模型，对非分类模型，该符合可以省去。[SEP]表示分句符号，用于断开输入语料中的两个句子。<br><img src="/hexo/img/Longshot-20240722164440.png" srcset="/hexo/img/loading.gif" lazyload alt="alt text"></p>
+<h2 id="3、微调"><a href="#3、微调" class="headerlink" title="3、微调"></a>3、微调</h2><p>在海量语料训练完BERT之后，便可以将其应用到NLP的各个任务中。<br>对应于NSP任务来说，其条件概率表示为P=softmax(CW<sup>T</sup>),其中C是BERT输出中的[CLS]符号，W是可学习的权值矩阵,对于其他任务来说，我们也可以根据BERT的输出信息做出相应的预测。<br><img src="/hexo/img/Longshot-20240722164715.png" srcset="/hexo/img/loading.gif" lazyload alt="alt text"></p>
+<h1 id="四、实验"><a href="#四、实验" class="headerlink" title="四、实验"></a>四、实验</h1><p>论文在实验部分对 BERT 在 GLUE（General Lanuage Understanding Evaluation），SQuAD v1.1 （Stanford Question Answering Dataset），SQuAD v2.0等数据集上做了 11 项 NLP 任务，均展示出了 BERT 的优越性。<br><img src="/hexo/img/bert-4.png" srcset="/hexo/img/loading.gif" lazyload alt="alt text"></p>
+<h1 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h1><p>BERT 的创新之处在于其深度双向预训练的策略，使得模型在理解语言时能够同时考虑左右两侧的上下文信息。BERT 不仅提升了语言表示的质量，还简化了预训练模型到下游任务的迁移流程。</p>
+<h1 id="六、参考"><a href="#六、参考" class="headerlink" title="六、参考"></a>六、参考</h1><section class="footnotes"><div class="footnote-list"><ol><li><span id="fn:1" class="footnote-text"><span>在 NLP 中，上游任务（Upstream Tasks）：通常是基础的、提供语言理解和处理能力的NLP任务，如分词、词性标注、句法分析，它们为更复杂的NLP应用打下基础；下游任务（Downstream Tasks）：依赖于上游任务输出的更高级的NLP任务，如情感分析、机器翻译、问答系统等，它们利用上游任务的输出来执行特定应用。
+<a href="#fnref:1" rev="footnote" class="footnote-backref"> ↩</a></span></span></li></ol></div></section>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/hexo/categories/%E8%AE%BA%E6%96%87/" class="category-chain-item">论文</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>BERT 论文精读</div>
+      <div>https://hua-wu-que-code.github.io/hexo/2024/07/17/BERT 论文精读/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>花无缺</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年7月17日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/hexo/2024/07/22/AlexNet%20%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" title="AlexNet 论文精读">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">AlexNet 论文精读</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/hexo/2024/07/15/7.15%E5%91%A8%E6%8A%A5/" title="7.15周报">
+                        <span class="hidden-mobile">7.15周报</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/hexo/js/events.js" ></script>
+<script  src="/hexo/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/hexo/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/hexo/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/hexo/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
