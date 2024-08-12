@@ -85,11 +85,12 @@ $$
 ## softmax 及其导数
 由于softmax和相关的损失函数很常见， 因此我们需要更好地理解它的计算方式。 将 (3)代入损失 (8)中。 利用softmax的定义，我们得到：
 $$
-\start{align}
-l(y,\hat{y}) &= -\sum_{j=1}_q y_j log\frac{exp(o_j)}{\sum_{k=1}{q}exp(o_k)} \tag{9} \\
-&= \sum_{j=1}_q y_j
+\begin{align}
+l(y,\hat{y}) &= -\sum_{j=1}^q y_j log\frac{exp(o_j)}{\sum_{k=1}^{q} exp(o_k)} \tag{9} \\
+&= \sum_{j=1}^q y_j3,  
 \end{align}
 $$
+
 
 # 模型预测和评估
 在训练softmax回归模型后，给出任何样本特征，我们可以预测每个输出类别的概率。 通常我们使用预测概率最高的类别作为输出类别。 如果预测与实际类别（标签）一致，则预测是正确的。 在接下来的实验中，我们将使用精度（accuracy）来评估模型的性能。 精度等于正确预测数与预测总数之间的比率。
